@@ -30,7 +30,7 @@ namespace openCVWork_with_files_
         private Image<Bgr, Byte> current_frame = null;
         Mat frame = new Mat();
         //seting the path to the algorithm for the face detection.
-        CascadeClassifier faceCasacdeClassifier = new CascadeClassifier("C:/Users/inova/source/repos/openCVWork(with files)/openCVWork(with files)/haarcascade_frontalface_alt.xml");
+        CascadeClassifier faceCasacdeClassifier = new CascadeClassifier("Pass the location of the haarcascade_frontalface_alt.xml, better to add it the solution");
         //will store the list of workers that are stored in the data base, for more info please refer to the database region.
         List<string> workers_names = new List<string>();
         //will stor the workers ID.
@@ -44,8 +44,8 @@ namespace openCVWork_with_files_
         //conection to firebase
         IFirebaseConfig config = new FirebaseConfig()
         {
-            AuthSecret = "VETz6xlrthekKna4AMetkkJnIZZhOP0x80teSp18",
-            BasePath = "https://workers-78924-default-rtdb.europe-west1.firebasedatabase.app/"
+            AuthSecret = "Enter your Firebase data here",
+            BasePath = "Enter your Firebase data here"
         };
 
         IFirebaseClient client;
