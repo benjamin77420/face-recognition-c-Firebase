@@ -11,10 +11,10 @@ For every sb folder that is found a new folder holding the name equals to the va
 77420
 |
 |
- ---> FullName : "Benjamin Ben-David"
-      ID : "77420"
-      faceImg1 : .....
-      faceImg2 : .....
+ ---> FullName : "Benjamin Ben-David"\n
+      ID : "77420"\n
+      faceImg1 : .....\n
+      faceImg2 : .....\n
 
          | |
          | |
