@@ -11,16 +11,17 @@ For every sb folder that is found a new folder holding the name equals to the va
 77420
 |
 |
- ---> FullName : "Benjamin Ben-David"\n
-      ID : "77420"\n
-      faceImg1 : .....\n
-      faceImg2 : .....\n
+---> FullName : "Benjamin Ben-David", 
+      ID : "77420", 
+      faceImg1 : ....., 
+      faceImg2 : .....
 
          | |
          | |
          \ /
-Benjamin Ben-David_77420_0.jpg
-Benjamin Ben-David_77420_1.jpg
+         
+Benjamin Ben-David_77420_0.jpg, 
+Benjamin Ben-David_77420_1.jpg, 
 Benjamin Ben-David_77420_2.jpg
 
 after the creation of the main training folder the program will make an array that is made of all the paths to files that end with a .jpg( *.jpg ).
