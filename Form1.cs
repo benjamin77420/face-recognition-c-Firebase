@@ -25,12 +25,14 @@ namespace openCVWork_with_files_
 {
     public partial class Form1 : Form
     {
+
+        // need to get the list of the images from the jason format 
         #region variables
         private Capture video_capture = null;
         private Image<Bgr, Byte> current_frame = null;
         Mat frame = new Mat();
         //seting the path to the algorithm for the face detection.
-        CascadeClassifier faceCasacdeClassifier = new CascadeClassifier("Pass the location of the haarcascade_frontalface_alt.xml, better to add it the solution");
+        CascadeClassifier faceCasacdeClassifier = new CascadeClassifier("C:/Users/inova/source/repos/openCVWork(with files)/openCVWork(with files)/haarcascade_frontalface_alt.xml");
         //will store the list of workers that are stored in the data base, for more info please refer to the database region.
         List<string> workers_names = new List<string>();
         //will stor the workers ID.
@@ -42,14 +44,17 @@ namespace openCVWork_with_files_
         //the recognizer that will evaluate the feed from the camera and the images data base for a match.
         EigenFaceRecognizer recognizer;
         //conection to firebase
+        //long recognition bool 
+        private int state_auth = 0;
         IFirebaseConfig config = new FirebaseConfig()
         {
-            AuthSecret = "Enter your Firebase data here",
-            BasePath = "Enter your Firebase data here"
+            AuthSecret = "VETz6xlrthekKna4AMetkkJnIZZhOP0x80teSp18",
+            BasePath = "https://workers-78924-default-rtdb.europe-west1.firebasedatabase.app/"
         };
 
         IFirebaseClient client;
         #endregion
+
         public Form1()
         {
             InitializeComponent();
@@ -88,11 +93,29 @@ namespace openCVWork_with_files_
 
                     Image<Gray, Byte> gray_image = resultImage.Convert<Gray, Byte>().Resize(200, 200, Inter.Cubic);
                     CvInvoke.EqualizeHist(gray_image, gray_image);
-
+                    
                     var result = recognizer.Predict(gray_image);
 
-                    Debug.WriteLine(result.Label + ". " + result.Distance);
-                    if (result.Label != -1 && result.Distance < 5000)
+                    if (state_auth == 0)
+                        Task.Factory.StartNew(() =>
+                        {
+                            
+                            state_auth = 1;
+                            Debug.WriteLine("we got it wqas converted to true!!!");
+                            Thread.Sleep(3000);
+                            
+
+                            if (state_auth == 2)
+                                MessageBox.Show("unkniwn face was detected");
+
+
+                            state_auth = 0;
+                        });
+
+
+
+                    //Debug.WriteLine(result.Label + ". " + result.Distance);
+                    if (result.Label != -1 && result.Distance < 7500)
                     {
                         CvInvoke.PutText(current_frame, workers_names[result.Label], new Point(face.X - 2, face.Y - 2),
                             FontFace.HersheyComplex, 1.0, new Bgr(Color.Orange).MCvScalar);
@@ -101,6 +124,7 @@ namespace openCVWork_with_files_
                     }
                     else
                     {
+                        state_auth = 2;
                         CvInvoke.PutText(current_frame, "Unknown", new Point(face.X - 2, face.Y - 2),
                             FontFace.HersheyComplex, 1.0, new Bgr(Color.Orange).MCvScalar);
                         CvInvoke.Rectangle(current_frame, face, new Bgr(Color.Red).MCvScalar, 2);
@@ -168,57 +192,29 @@ namespace openCVWork_with_files_
             if (!Directory.Exists(save_path))
                 Directory.CreateDirectory(save_path);
 
-            Task.Factory.StartNew(() => {
-                foreach (var worker in worker_recordes) {
-                    //creating a path for every indevidual worker 
-                    string worker_folder = save_path + @"\" + worker.Value.ID;
-                    //checking if a folder like that already 
-                    if (!Directory.Exists(worker_folder))
-                    {
-                        //creating a folder to accommodate the worker face Images 
-                        Directory.CreateDirectory(worker_folder);
+            foreach (var worker in worker_recordes) {
+                //creating a path for every indevidual worker 
+                string worker_folder = save_path + @"\" + worker.Value.ID;
+                //checking if a folder like that already 
+                if (!Directory.Exists(worker_folder))
+                {
+                    //will use to differ the name of the images
+                    int i = 0;
+                    //creating a folder to accommodate the worker face Images 
+                    Directory.CreateDirectory(worker_folder);
 
-                        //fetching every img that is stored in every worker that is stored in the data base inside the save path
-                        base64ToImage(worker.Value.faceImg1).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_1.jpg");
-                        base64ToImage(worker.Value.faceImg2).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_2.jpg");
-                        base64ToImage(worker.Value.faceImg3).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_3.jpg");
-                        base64ToImage(worker.Value.faceImg4).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_4.jpg");
-                        base64ToImage(worker.Value.faceImg5).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_5.jpg");
-                        base64ToImage(worker.Value.faceImg6).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_6.jpg");
-                        base64ToImage(worker.Value.faceImg7).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_7.jpg");
-                        base64ToImage(worker.Value.faceImg8).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_8.jpg");
-                        base64ToImage(worker.Value.faceImg9).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_9.jpg");
-                        base64ToImage(worker.Value.faceImg10).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_10.jpg");
-                        base64ToImage(worker.Value.faceImg11).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_11.jpg");
-                        base64ToImage(worker.Value.faceImg12).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_12.jpg");
-                        base64ToImage(worker.Value.faceImg13).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_13.jpg");
-                        base64ToImage(worker.Value.faceImg14).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_14.jpg");
-                        base64ToImage(worker.Value.faceImg15).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_15.jpg");
-                        base64ToImage(worker.Value.faceImg16).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_16.jpg");
-                        base64ToImage(worker.Value.faceImg17).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_17.jpg");
-                        base64ToImage(worker.Value.faceImg18).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_18.jpg");
-                        base64ToImage(worker.Value.faceImg19).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_19.jpg");
-                        base64ToImage(worker.Value.faceImg20).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_20.jpg");
-                        base64ToImage(worker.Value.faceImg21).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_21.jpg");
-                        base64ToImage(worker.Value.faceImg22).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_22.jpg");
-                        base64ToImage(worker.Value.faceImg23).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_23.jpg");
-                        base64ToImage(worker.Value.faceImg24).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_24.jpg");
-                        base64ToImage(worker.Value.faceImg25).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_25.jpg");
-                        base64ToImage(worker.Value.faceImg26).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_26.jpg");
-                        base64ToImage(worker.Value.faceImg27).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_27.jpg");
-                        base64ToImage(worker.Value.faceImg28).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_28.jpg");
-                        base64ToImage(worker.Value.faceImg29).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_29.jpg");
-                        base64ToImage(worker.Value.faceImg30).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_30.jpg");
-                        base64ToImage(worker.Value.faceImg31).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_31.jpg");
-                        base64ToImage(worker.Value.faceImg32).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_32.jpg");
-                        base64ToImage(worker.Value.faceImg33).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_33.jpg");
-                        base64ToImage(worker.Value.faceImg34).Resize(200, 200, Inter.Cubic).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_34.jpg");
-                    }
+                    FirebaseResponse images = client.Get(@"Workers/"+ worker.Value.ID +"/images");
+
+                    Dictionary<string, string> workers_images = JsonConvert.DeserializeObject<Dictionary<string, string>>(images.Body.ToString());
+
+                    foreach (var ing in workers_images)
+                        base64ToImage(ing.Value).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_" + (i++) + ".jpg");
                 }
-            });
+            }
         }
 
-        private Image<Bgr, Byte> base64ToImage(string base64) {
+        public static Image<Bgr, Byte> base64ToImage(string base64)
+        {
             //converting the base64 string from the data bae to an image to be later stored in a folder.
             byte[] img = Convert.FromBase64String(base64);
             MemoryStream ms = new MemoryStream(img);
@@ -226,7 +222,9 @@ namespace openCVWork_with_files_
             Image<Bgr, Byte> face = new Image<Bgr, Byte>(bit);
             return face;
         }
+
         #endregion
+
         #region testing 
         //uploading new workers in to the firebase for testing needs
         private void upload_worker()
@@ -249,47 +247,12 @@ namespace openCVWork_with_files_
             {
                 FullName = "Benjamin Ben-David",
                 ID = "77420",
-                faceImg1 = img_string[0],
-                faceImg2 = img_string[1],
-                faceImg3 = img_string[2],
-                faceImg4 = img_string[3],
-                faceImg5 = img_string[4],
-                faceImg6 = img_string[5],
-                faceImg7 = img_string[6],
-                faceImg8 = img_string[7],
-                faceImg9 = img_string[8],
-                faceImg10 = img_string[9],
-                faceImg11 = img_string[10],
-                faceImg12 = img_string[11],
-                faceImg13 = img_string[12],
-                faceImg14 = img_string[13],
-                faceImg15 = img_string[14],
-                faceImg16 = img_string[15],
-                faceImg34 = img_string[34],
-                faceImg17 = img_string[17],
-                faceImg18 = img_string[18],
-                faceImg19 = img_string[19],
-                faceImg20 = img_string[20],
-                faceImg21 = img_string[21],
-                faceImg22 = img_string[22],
-                faceImg23 = img_string[23],
-                faceImg24 = img_string[24],
-                faceImg25 = img_string[25],
-                faceImg26 = img_string[26],
-                faceImg27 = img_string[27],
-                faceImg28 = img_string[28],
-                faceImg29 = img_string[29],
-                faceImg30 = img_string[30],
-                faceImg31 = img_string[31],
-                faceImg32 = img_string[32],
-                faceImg33 = img_string[33]
-                
+                imges = img_string
             };
-
+            
             var set = client.Set("Workers/" + new_worker.ID, new_worker);
         } 
     
-
         public List<string> ImageIntoBase64String(List<Image<Gray, Byte>> image_bank)
         {
             List<string> string_bank = new List<string>();
