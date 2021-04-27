@@ -12,9 +12,12 @@ For every sb folder that is found a new folder holding the name equals to the va
 \|
 \|
 ---> FullName : "Benjamin Ben-David", 
-      ID : "77420", 
-      faceImg1 : ....., 
-      faceImg2 : .....
+      ID : "77420",
+      images : 
+         |
+         |
+         ----->faceImg1 : ....., 
+               faceImg2 : .....
 
          | |
          | |
