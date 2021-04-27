@@ -9,8 +9,8 @@ For every sb folder that is found a new folder holding the name equals to the va
          \ /
          
 77420
-|
-|
+\|
+\|
 ---> FullName : "Benjamin Ben-David", 
       ID : "77420", 
       faceImg1 : ....., 
