@@ -20,13 +20,12 @@ using System.IO;
 using System.Drawing.Imaging;
 using System.Diagnostics;
 using System.Threading;
+using System.IO.Ports;
 
 namespace openCVWork_with_files_
 {
     public partial class Form1 : Form
     {
-
-        // need to get the list of the images from the jason format 
         #region variables
         private Capture video_capture = null;
         private Image<Bgr, Byte> current_frame = null;
@@ -44,12 +43,9 @@ namespace openCVWork_with_files_
         //the recognizer that will evaluate the feed from the camera and the images data base for a match.
         EigenFaceRecognizer recognizer;
         //conection to firebase
-        //long recognition bool 
-        private int state_auth = 0;
         IFirebaseConfig config = new FirebaseConfig()
         {
-            AuthSecret = "VETz6xlrthekKna4AMetkkJnIZZhOP0x80teSp18",
-            BasePath = "https://workers-78924-default-rtdb.europe-west1.firebasedatabase.app/"
+            //Enter the database here
         };
 
         IFirebaseClient client;
@@ -96,24 +92,6 @@ namespace openCVWork_with_files_
                     
                     var result = recognizer.Predict(gray_image);
 
-                    if (state_auth == 0)
-                        Task.Factory.StartNew(() =>
-                        {
-                            
-                            state_auth = 1;
-                            Debug.WriteLine("we got it wqas converted to true!!!");
-                            Thread.Sleep(3000);
-                            
-
-                            if (state_auth == 2)
-                                MessageBox.Show("unkniwn face was detected");
-
-
-                            state_auth = 0;
-                        });
-
-
-
                     //Debug.WriteLine(result.Label + ". " + result.Distance);
                     if (result.Label != -1 && result.Distance < 7500)
                     {
@@ -124,7 +102,6 @@ namespace openCVWork_with_files_
                     }
                     else
                     {
-                        state_auth = 2;
                         CvInvoke.PutText(current_frame, "Unknown", new Point(face.X - 2, face.Y - 2),
                             FontFace.HersheyComplex, 1.0, new Bgr(Color.Orange).MCvScalar);
                         CvInvoke.Rectangle(current_frame, face, new Bgr(Color.Red).MCvScalar, 2);
@@ -210,6 +187,43 @@ namespace openCVWork_with_files_
                     foreach (var ing in workers_images)
                         base64ToImage(ing.Value).Save(worker_folder + @"\" + worker.Value.FullName + "_" + worker.Value.ID + "_" + (i++) + ".jpg");
                 }
+            }
+        }
+
+        private void alert_intruder()
+        {
+            string phone_number = "+972546245114";
+            string message_text = "please check the entrance, unknown face ditected.";
+
+            try
+            {
+                SerialPort sp = new SerialPort();
+                sp.PortName = "com5";
+                sp.Open();
+                sp.WriteLine("AT" + Environment.NewLine);
+                Thread.Sleep(100);
+                sp.WriteLine("AT+CMGF=1" + Environment.NewLine);
+                Thread.Sleep(100);
+                sp.WriteLine("AT+CSCS=\"GSM\"" + Environment.NewLine);
+                Thread.Sleep(100);
+                sp.WriteLine("AT+CMGS=\"" + phone_number + "\"" + Environment.NewLine);
+                Thread.Sleep(100);
+                sp.WriteLine(message_text + Environment.NewLine);
+                Thread.Sleep(100);
+                sp.Write(new byte[] { 100 }, 0, 1);
+                Thread.Sleep(100);
+                var response = sp.ReadExisting();
+                if (response.Contains("ERROR"))
+                    MessageBox.Show("send faild  ", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                else {
+                    MessageBox.Show("SMS Send", "Message", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                
+                sp.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Message", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
